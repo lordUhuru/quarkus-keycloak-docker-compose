@@ -35,6 +35,7 @@ services:
     entrypoint: /opt/keycloak/bin/kc.sh --config-file=/opt/keycloak/conf/keycloak.conf start-dev
     volumes:
       - ./keycloak-data:/opt/keycloak/conf
+      - ./exports:/opt/keycloak/data
     ports:
       - "8080:8080"
       - "8443:8443"
