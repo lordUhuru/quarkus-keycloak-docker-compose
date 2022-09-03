@@ -1,0 +1,49 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    image: postgres:13.2
+    restart: unless-stopped
+    container_name: cards_postgres
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d
+      - ./postgres/conf:/var/lib/lib/postgresql/data
+    env_file:
+      - ./database.dev.env
+    ports:
+      - "5432:5432"
+    networks:
+      - backend
+
+  keycloak:
+    container_name: local_keycloak
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KC_FEATURES:
+        authorization
+        token-exchange
+        docker
+        impersonation
+        scripts
+        upload-scripts
+        web-authn
+        client-policies
+        dynamic-scopes
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+    entrypoint: /opt/keycloak/bin/kc.sh --config-file=/opt/keycloak/conf/keycloak.conf start-dev
+    volumes:
+      - ./keycloak-data:/opt/keycloak/conf
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    networks:
+      - backend
+    depends_on:
+      postgres:
+        condition: service_started
+networks:
+  backend:
+    name: backend
+    driver: bridge
